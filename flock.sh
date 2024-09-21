@@ -101,12 +101,11 @@ function install_node() {
 #!/bin/bash
 source "$MINICONDA_PATH/bin/activate" llm-loss-validator
 cd $SCRIPT_DIR/src
-CUDA_VISIBLE_DEVICES=0 \
 bash start.sh \
 --hf_token "$HF_TOKEN" \
 --flock_api_key "$FLOCK_API_KEY" \
 --task_id "$TASK_ID" \
---validation_args_file validation_config.json.example \
+--validation_args_file validation_config_cpu.json.example \
 --auto_clean_cache False
 EOF
     chmod +x run_validator.sh
@@ -135,7 +134,7 @@ function install_extra_node() {
     conda create -n $NODE_NAME python==3.10 -y
     source "$MINICONDA_PATH/bin/activate" $NODE_NAME
     # 安装依赖
-    # pip install -r requirements.txt
+    pip install -r requirements.txt
     # 获取当前目录的绝对路径
     SCRIPT_DIR="$(pwd)"
     # 创建启动脚本
@@ -143,12 +142,11 @@ function install_extra_node() {
 #!/bin/bash
 source "$MINICONDA_PATH/bin/activate" $NODE_NAME
 cd $SCRIPT_DIR/src
-CUDA_VISIBLE_DEVICES=0 \
 bash start.sh \
 --hf_token "$HF_TOKEN" \
 --flock_api_key "$FLOCK_API_KEY" \
 --task_id "$TASK_ID" \
---validation_args_file validation_config.json.example \
+--validation_args_file validation_config_cpu.json.example \
 --auto_clean_cache False
 EOF
     chmod +x run_validator.sh
