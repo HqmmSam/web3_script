@@ -114,6 +114,48 @@ EOF
     echo "验证者节点已经启动."
 }
 
+function install_extra_node() {
+    install_conda
+    ensure_conda_initialized
+    install_nodejs_and_npm
+    install_pm2
+    # apt update && apt upgrade -y
+    # apt install curl sudo git python3-venv iptables build-essential wget jq make gcc nano npm -y
+    read -p "验证节点编号, 从1开始: " Seq
+    read -p "输入Hugging face API: " HF_TOKEN
+    read -p "输入Flock API: " FLOCK_API_KEY
+    read -p "输入任务ID: " TASK_ID
+    NODE_NAME="llm-loss-validator_$Seq"
+    echo "节点名称: $NODE_NAME"
+    # 克隆仓库
+    #git clone https://github.com/FLock-io/llm-loss-validator.git
+    # 进入项目目录
+    cd llm-loss-validator
+    # 创建并激活conda环境
+    conda create -n $NODE_NAME python==3.10 -y
+    source "$MINICONDA_PATH/bin/activate" $NODE_NAME
+    # 安装依赖
+    # pip install -r requirements.txt
+    # 获取当前目录的绝对路径
+    SCRIPT_DIR="$(pwd)"
+    # 创建启动脚本
+    cat << EOF > run_validator.sh
+#!/bin/bash
+source "$MINICONDA_PATH/bin/activate" $NODE_NAME
+cd $SCRIPT_DIR/src
+CUDA_VISIBLE_DEVICES=0 \
+bash start.sh \
+--hf_token "$HF_TOKEN" \
+--flock_api_key "$FLOCK_API_KEY" \
+--task_id "$TASK_ID" \
+--validation_args_file validation_config.json.example \
+--auto_clean_cache False
+EOF
+    chmod +x run_validator.sh
+    pm2 start run_validator.sh --name "$NODE_NAME" -- start && pm2 save && pm2 startup
+    echo "验证者节点已经启动."
+}
+
 function check_node() {
     pm2 logs llm-loss-validator
 }
@@ -222,7 +264,8 @@ function main_menu() {
     echo "6. 删除训练节点"
     echo "7. 修改任务 ID 并重启节点"
     echo "8. 升级节点"
-    read -p "请输入选项（1-8）: " OPTION
+    echo "9. 额外安装验证节点"
+    read -p "请输入选项（1-9）: " OPTION
     case $OPTION in
     1) install_node ;;
     2) install_train_node ;;
@@ -232,6 +275,7 @@ function main_menu() {
     6) pm2 delete flock-training-node && rm -rf testnet-training-node-quickstart ;;
     7) update_task_id ;;
     8) update_node ;;  # 添加升级节点功能
+    9) install_extra_node ;;
     *) echo "无效选项。" ;;
     esac
 }
