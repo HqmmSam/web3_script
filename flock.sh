@@ -86,7 +86,7 @@ function install_node() {
     read -p "输入Flock API: " FLOCK_API_KEY
     read -p "输入任务ID: " TASK_ID
     # 克隆仓库
-    git clone https://github.com/FLock-io/llm-loss-validator.git
+    git clone https://github.com/HqmmSam/llm-loss-validator.git
     # 进入项目目录
     cd llm-loss-validator
     # 创建并激活conda环境
