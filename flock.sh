@@ -143,11 +143,12 @@ function install_extra_node() {
 #!/bin/bash
 source "$MINICONDA_PATH/bin/activate" $NODE_NAME
 cd $SCRIPT_DIR/src
+CUDA_VISIBLE_DEVICES=0 \
 bash start.sh \
 --hf_token "$HF_TOKEN" \
 --flock_api_key "$FLOCK_API_KEY" \
 --task_id "$TASK_ID" \
---validation_args_file validation_config_cpu.json.example \
+--validation_args_file validation_config.json.example \
 --auto_clean_cache False
 EOF
     chmod +x run_validator.sh
